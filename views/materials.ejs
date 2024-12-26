@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Product Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://ai-public.creatie.ai/gen_page/tailwind-custom.css" rel="stylesheet" />
+    <script
+        src="https://cdn.tailwindcss.com/3.4.5?plugins=forms@0.5.7,typography@0.5.13,aspect-ratio@0.4.2,container-queries@0.1.1"></script>
+    <script src="https://ai-public.creatie.ai/gen_page/tailwind-config.min.js" data-color="#000000"
+        data-border-radius="small"></script>
+
+    <style>
+        .hide {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-gray-50 font-sans">
+
+    <%- include('nav.ejs') %>
+
+        <main class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="bg-white shadow rounded-lg p-6 mb-8">
+                <div class="space-y-6">
+                    <form action="/save" method="POST">
+                        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                            <div class="hide">
+                                <p>계정정보</p>
+                                <input type="text" name="userId" value="<%= user.userId %>" readonly>
+                            </div>
+
+                            <div><label class="block text-sm font-medium text-gray-700">재료명</label>
+                                <input type="text" name="mname"
+                                    class="mt-1 block w-full border-gray-300 focus:ring-custom focus:border-custom sm:text-sm !rounded-button"
+                                    placeholder="재료명을 입력하세요." />
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">매입가</label>
+                                <div class="mt-1 relative">
+                                    <div class="flex space-x-2"><input type="text" name="mprice"
+                                            class="mprice block w-full border-gray-300 focus:ring-custom focus:border-custom sm:text-sm !rounded-button"
+                                            placeholder="매입가를 입력하세요" />
+                                        <select name="cUnit"
+                                            class="block w-24 border-gray-300 focus:ring-custom focus:border-custom sm:text-sm !rounded-button">
+                                            <option>원</option>
+                                            <option>달러</option>
+                                            <option>위안</option>
+                                        </select>
+                                        <input type="text" name="minPrice" class="minPrice hide" style="width: 100px" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">중량</label>
+                                <div class="mt-1 flex space-x-2">
+                                    <input type="text" name="mcap"
+                                        class="mcap block w-full border-gray-300 focus:ring-custom focus:border-custom sm:text-sm !rounded-button"
+                                        placeholder="중량을 입력하세요." />
+                                    <select name="capUnit"
+                                        class="capUnit block w-24 border-gray-300 focus:ring-custom focus:border-custom sm:text-sm !rounded-button">
+                                        <option>g</option>
+                                        <option>Kg</option>
+                                        <option>ml</option>
+                                        <option>L</option>
+                                        <option>ea</option>
+                                    </select>
+                                    <input type="text" name="minCap" class="minCap hide" style="width: 100px"
+                                        readonly />
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">메모</label>
+                                <input type="text" name="mmemo"
+                                    class="mt-1 block w-full border-gray-300 focus:ring-custom focus:border-custom sm:text-sm !rounded-button"
+                                    placeholder="메모를 입력하세요." />
+                            </div>
+                        </div>
+                        <div class="flex justify-end mt-6">
+                            <button type="submit"
+                                class="!rounded-button bg-custom px-6 py-2 text-sm font-medium text-white">재료
+                                저장</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="bg-white shadow rounded-lg overflow-hidden">
+                <div class="mb-6">
+                    <div class="relative max-w-md"><input type="text"
+                            class="block w-full border-gray-300 focus:ring-custom focus:border-custom sm:text-sm !rounded-button"
+                            placeholder="재료 찾기" /><button
+                            class="absolute inset-y-0 right-0 px-3 flex items-center !rounded-button bg-custom text-white"><i
+                                class="fas fa-search text-sm"></i></button></div>
+                </div>
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                재료명</th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                매입가</th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                중량</th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                메모</th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                수정/삭제</th>
+                        </tr>
+                    </thead>
+                    <% if(data.length=='' ){ %>
+                        <h4 class="text-gray-500">아직 저장된 재료가 없어요.</h4>
+                        <h4 class="text-gray-500">재료입력에서 재료를 추가해보세요.</h4>
+                        <% } else { %>
+                            <% for (let i=0; i < data.length; i++) { %>
+                                <form action="/m-delete" method="POST" class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <input name="_id" value="<%= data[i]._id %>" hidden>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <%= data[i].mname %>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <%= data[i].mprice + data[i].cUnit %>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <%= data[i].mcap + data[i].capUnit %>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <%= data[i].mmemo %>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <button class="text-blue-600 hover:text-blue-800 mr-3 edit-btn"><i
+                                                    class="fas fa-edit"></i></button>
+                                            <button type="submit" class="text-red-600 hover:text-red-800 del-btn"><i
+                                                    class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                </form>
+                                <% } %>
+                                    <% } %>
+                </table>
+            </div>
+        </main>
+
+        <footer class="bg-white mt-8">
+            <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div class="text-center text-sm text-gray-500">
+                    © 2024 Product Management System. All rights reserved.
+                </div>
+            </div>
+        </footer>
+        <script>
+            document.querySelector('.mprice').addEventListener('input', function () {
+                calculateMinPrice(); // 입력이 변경될 때마다 계산
+            });
+
+            document.querySelector('.mcap').addEventListener('input', function () {
+                calculateMinPrice(); // 입력이 변경될 때마다 계산
+            });
+
+
+            document.querySelector('.capUnit').addEventListener('change', function () {
+                calculateMinPrice(); // 단위가 변경될 때마다 계산
+            });
+
+
+            function calculateMinPrice() {
+                var mprice = document.querySelector('.mprice')
+                var minPrice = document.querySelector('.minPrice');
+                var selectedValue = document.querySelector('.capUnit').value;
+                var mcap = document.querySelector('.mcap');
+                var minCap = document.querySelector('.minCap');
+
+                if (selectedValue == 'Kg' || selectedValue == 'L') {
+                    minCap.value = mcap.value * 1000;
+                    if (mprice !== '') {
+                        minPrice.value = mprice.value / minCap.value;
+                    } else {
+                        minPrice.value = 'err';
+                    }
+                } else {
+                    minCap.value = mcap.value;
+                    if (mprice !== '') {
+                        minPrice.value = mprice.value / minCap.value;
+                    } else {
+                        minPrice.value = 'err';
+                    }
+                }
+            }
+        
+        </script>
+
+</body>
+
+</html>

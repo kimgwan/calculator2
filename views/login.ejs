@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>로그인</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+    <link href="https://ai-public.creatie.ai/gen_page/tailwind-custom.css" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com/3.4.5?plugins=forms@0.5.7,typography@0.5.13,aspect-ratio@0.4.2,container-queries@0.1.1"></script>
+    <script src="https://ai-public.creatie.ai/gen_page/tailwind-config.min.js" data-color="#000000" data-border-radius="small"></script>
+</head>
+<body class="min-h-screen bg-gray-50 font-[&#39;Noto_Sans_KR&#39;]">
+    <div class="flex min-h-screen flex-col items-center justify-center px-6 py-12 lg:px-8">
+        <div class="w-full max-w-md">
+            <div class="mb-10 flex flex-col items-center">
+                <img class="h-12 w-auto" src="https://ai-public.creatie.ai/gen_page/logo_placeholder.png" alt="로고"/>
+                <h2 class="mt-6 text-2xl font-semibold text-gray-900">계정에 로그인하세요</h2>
+                <p class="mt-2 text-sm text-gray-600">또는 <a href="#" class="font-medium text-custom hover:text-custom/80">회원가입</a></p>
+            </div>
+
+            <div class="bg-white px-8 py-10 shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
+                <form class="space-y-6" action="#" method="POST">
+                    <div>
+                        <label for="userId" class="block text-sm font-medium text-gray-700">아이디</label>
+                        <div class="mt-2">
+                            <input id="id" name="userId" type="text" autocomplete="email" required="" class="block w-full rounded-md border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-custom sm:text-sm"/>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700">비밀번호</label>
+                        <div class="mt-2">
+                            <input id="password" name="password" type="password" autocomplete="current-password" required="" class="block w-full rounded-md border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-custom sm:text-sm"/>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-custom focus:ring-custom"/>
+                            <label for="remember-me" class="ml-2 block text-sm text-gray-700">로그인 상태 유지</label>
+                        </div>
+
+                        <a href="#" class="text-sm font-medium text-custom hover:text-custom/80">비밀번호 찾기</a>
+                    </div>
+
+                    <button type="submit" class="!rounded-button flex w-full justify-center bg-custom px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-custom/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-custom">로그인</button>
+                </form>
+
+                <div class="mt-8">
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-gray-200"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="bg-white px-2 text-gray-500">소셜 로그인</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 grid grid-cols-2 gap-4">
+                        <button type="button" class="!rounded-button flex w-full items-center justify-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                            <i class="fab fa-google text-lg" style="color: #DB4437;"></i>
+                        </button>
+                        <button type="button" class="!rounded-button flex w-full items-center justify-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" style="background-color: #FEE500; color: #000000;">
+                            <i class="fa-solid fa-comment text-lg"></i>
+                        </button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="mt-8 text-center text-sm text-gray-500">
+            <p>© 2024 Company, Inc. All rights reserved.</p>
+            <p class="mt-2">
+                <a href="#" class="hover:text-gray-900">개인정보 처리방침</a> · 
+                <a href="#" class="hover:text-gray-900">이용약관</a>
+            </p>
+        </footer>
+    </div>
+
+
+
+
+</body></html>

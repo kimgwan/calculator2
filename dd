@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>상품 관리 시스템</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://ai-public.creatie.ai/gen_page/tailwind-custom.css" rel="stylesheet" />
+    <script
+        src="https://cdn.tailwindcss.com/3.4.5?plugins=forms@0.5.7,typography@0.5.13,aspect-ratio@0.4.2,container-queries@0.1.1"></script>
+    <script src="https://ai-public.creatie.ai/gen_page/tailwind-config.min.js" data-color="#000000"
+        data-border-radius="small"></script>
+</head>
+
+<body class="bg-gray-50 min-h-screen font-sans">
+    <nav class="bg-white shadow">
+        <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <img class="h-8 w-auto" src="https://ai-public.creatie.ai/gen_page/logo_placeholder.png"
+                            alt="Logo" />
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="#"
+                            class="border-custom text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">제품관리</a>
+                        <a href="#"
+                            class="border-transparent text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">상품관리</a>
+                        <a href="#"
+                            class="border-transparent text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">문의/견적사항</a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-gray-700 mr-4">환영합니다 대표님!</span>
+                    <button
+                        class="!rounded-button bg-white border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">로그아웃</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <main class="max-w-8xl mx-auto py-10 sm:px-6 lg:px-8">
+        <div class="px-4 py-6 sm:px-0">
+            <div class="border-b border-gray-200">
+                <nav class="-mb-px flex space-x-8">
+                    <a href="#"
+                        class="border-custom text-custom whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">상품목록</a>
+                    <a href="#"
+                        class="border-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">상품입력</a>
+                </nav>
+            </div>
+            <div class="mt-8 space-y-6">
+                <div class="bg-white shadow rounded-lg flex items-center space-x-6 p-6">
+                    <div class="flex-1">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i
+                                    class="fas fa-search text-gray-400"></i></div><input type="text"
+                                class="shadow-sm focus:ring-custom focus:border-custom block w-full pl-10 sm:text-sm border-gray-300 !rounded-button"
+                                placeholder="상품명 또는 상품코드로 검색" />
+                        </div>
+                    </div><button
+                        class="!rounded-button bg-custom text-white px-4 py-2 text-sm font-medium hover:bg-custom/90">검색</button>
+                </div>
+                <div class="bg-white shadow rounded-lg p-6 mt-6">
+                    <div class="grid grid-cols-1 gap-y-8 relative">
+                        <div class="col-span-1 mb-6">
+                            <label class="block text-sm font-medium text-gray-700">상품명</label>
+                            <div class="mt-1 relative w-1/2">
+                                <input type="text"
+                                    class="shadow-sm focus:ring-custom focus:border-custom block w-full sm:text-sm border-gray-300 !rounded-button bg-white"
+                                    placeholder="상품명 입력" /></div>
+                            <div class="absolute right-0 top-0 flex space-x-2"><button
+                                    class="!rounded-button bg-white border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">수정</button><button
+                                    class="!rounded-button bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">삭제</button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-8">
+                            <div class="col-span-1"><label class="block text-sm font-medium text-gray-700">판매가</label>
+                                <div class="mt-1"><input type="text"
+                                        class="shadow-sm focus:ring-custom focus:border-custom block w-full sm:text-sm border-gray-300 !rounded-button"
+                                        placeholder="판매가 입력" value="10000" /></div>
+                            </div>
+                            <div class="col-span-1"><label class="block text-sm font-medium text-gray-700">원가</label>
+                                <div class="mt-1"><input type="text"
+                                        class="shadow-sm focus:ring-custom focus:border-custom block w-full sm:text-sm border-gray-300 !rounded-button"
+                                        placeholder="원가 입력" value="930.00" /></div>
+                            </div>
+                            <div class="col-span-1"><label class="block text-sm font-medium text-gray-700">원가율
+                                    (%)</label>
+                                <div class="mt-1"><input type="text"
+                                        class="shadow-sm focus:ring-custom focus:border-custom block w-full sm:text-sm border-gray-300 !rounded-button"
+                                        readonly="" value="9.30%" /></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer class="bg-white mt-12">
+        <div class="max-w-8xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-gray-500">© 2024 상품 관리 시스템. All rights reserved.</p>
+        </div>
+    </footer>
