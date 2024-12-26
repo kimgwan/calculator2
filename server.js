@@ -8,7 +8,7 @@ const express = require('express')
 const app = express()
 const { MongoClient, ObjectId, BSONError } = require('mongodb');
 const methodOverride = require('method-override')
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs');
 const MongoStore = require('connect-mongo')
 
 app.use(methodOverride('_method'))
