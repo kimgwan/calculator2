@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>비밀번호 재설정</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://ai-public.creatie.ai/gen_page/tailwind-custom.css" rel="stylesheet" />
+    <script
+        src="https://cdn.tailwindcss.com/3.4.5?plugins=forms@0.5.7,typography@0.5.13,aspect-ratio@0.4.2,container-queries@0.1.1"></script>
+    <script src="https://ai-public.creatie.ai/gen_page/tailwind-config.min.js" data-color="#000000"
+        data-border-radius="small"></script>
+</head>
+
+<body class="bg-gray-50 font-[&#39;Noto_Sans_KR&#39;]">
+    <div class="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        
+        <div class="sm:mx-auto sm:w-full sm:max-w-md">
+            <img class="mx-auto h-12 w-auto" src="/images/logo.png" alt="Logo" />
+            <h2 class="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">비밀번호 재설정</h2>
+        </div>
+
+        <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+            <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+                <form id="reset-password-form" class="space-y-6">
+                    <!-- 이메일 값을 숨겨놓은 필드 -->
+        <input type="email" id="hidden-email" name="email" value="<%= email %>"  readonly required>
+                    <div>
+                        <label for="new-password" class="block text-sm font-medium text-gray-700">새 비밀번호</label>
+                        <div class="mt-1">
+                            <input type="password" id="new-password" name="new-password" required
+                                class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-custom focus:outline-none focus:ring-custom sm:text-sm" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="confirm-password" class="block text-sm font-medium text-gray-700">비밀번호 확인</label>
+                        <div class="mt-1">
+                            <input type="password" id="confirm-password" name="confirm-password" required
+                                class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-custom focus:outline-none focus:ring-custom sm:text-sm" />
+                        </div>
+                    </div>
+
+                    <button type="button" id="reset-password"
+                        class="mt-4 w-full justify-center bg-custom px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-custom/90 focus:outline-none focus:ring-2 focus:ring-custom focus:ring-offset-2"
+                        onclick="resetPassword()">비밀번호 재설정</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function resetPassword() {
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const email = document.getElementById('hidden-email').value; // 숨겨진 이메일 값 가져오기
+
+            if (newPassword !== confirmPassword) {
+                alert('비밀번호가 일치하지 않습니다. 다시 확인해주세요.');
+                return;
+            }
+
+            fetch('/reset-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email, password: newPassword }), // 이메일과 비밀번호 전송
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        alert('비밀번호가 성공적으로 재설정되었습니다!');
+                        window.location.href = '/login'; // 로그인 페이지로 리디렉션
+                    } else {
+                        alert(result.message || '비밀번호 재설정에 실패했습니다. 다시 시도해주세요.');
+                    }
+                });
+        }
+
+    </script>
+</body>
+
+</html>

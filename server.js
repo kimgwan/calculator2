@@ -60,6 +60,31 @@ app.get('/', (req, res) => {
 app.get('/findPass', (req, res) => {
     res.render('findPass.ejs')
 })
+app.get('/editPass', (req, res) => {
+    // 먼저 세션 데이터 확인
+    const email = req.session.email;
+    const verifiedAt = req.session.verifiedAt;
+
+    // 이메일과 인증 여부를 미리 판단
+    let emailVerified = false;
+    if (email && verifiedAt) {
+        const currentTime = Date.now();
+
+        // 인증 시간이 5분 이내인지 확인
+        if (currentTime - verifiedAt <= 5 * 60 * 1000) {
+            emailVerified = true;
+        }
+    }
+
+    // 인증 여부에 따른 처리
+    if (emailVerified) {
+        // 인증된 이메일을 전달
+        res.render('editPass.ejs', { email, emailVerified });
+    } else {
+        // 인증되지 않거나 인증이 만료되었으면 인증 페이지로 리디렉션
+        res.redirect('/findPass');
+    }
+});
 app.get('/verifyEmail', (req, res) => {
     res.render('verifyEmail.ejs')
 })
@@ -150,7 +175,31 @@ app.post('/delProduct', async (req, res) => {
 
 })
 
+const userSchema = new mongoose.Schema({
+    userId: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    nickname: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    phone: { type: String },
+    birth: { type: Date },
+    // 기타 필요한 필드 추가 가능
+});
 
+// 비밀번호 해시화 전 처리 (저장 전)
+userSchema.pre('save', async function (next) {
+    if (this.isModified('password')) {
+        this.password = await bcryptjs.hash(this.password, 10);
+    }
+    next();
+});
+
+// 비밀번호 확인 메소드 추가
+userSchema.methods.comparePassword = async function (password) {
+    return await bcryptjs.compare(password, this.password);
+};
+
+const User = mongoose.model('User', userSchema);
+module.exports = User;
 
 // 회원가입 페이지
 // app.get('/signup', (req, res) => {
@@ -164,12 +213,12 @@ app.get('/signup', (req, res) => {
     // 먼저 세션 데이터 확인
     const email = req.session.email;
     const verifiedAt = req.session.verifiedAt;
-    
+
     // 이메일과 인증 여부를 미리 판단
     let emailVerified = false;
     if (email && verifiedAt) {
         const currentTime = Date.now();
-        
+
         // 인증 시간이 5분 이내인지 확인
         if (currentTime - verifiedAt <= 5 * 60 * 1000) {
             emailVerified = true;
@@ -197,37 +246,43 @@ const transporter = nodemailer.createTransport({
 // 회원가입 기능 (이용약관 - 개인정보 수집 등  메일링서비스, 자동 가입 방지)
 app.post('/register', async (req, res) => {
     try {
-        console.log(req.body)
+        console.log(req.body);
         const { userId, password, nickname, email, phone, birth } = req.body;
 
         // 비밀번호 최소 8자리 이상 체크
         if (password.length < 8) {
             return res.status(400).send('비밀번호는 최소 8자리 이상이어야 합니다.');
         }
+
         // 비밀번호를 해시화
         const hash = await bcryptjs.hash(password, 10);
+
+        // 이메일 표준화 (공백 제거 및 소문자 변환)
+        const normalizedEmail = email.trim().toLowerCase();
 
         // 아이디 중복 체크
         const existingUser = await db.collection('user').findOne({ userId });
         if (existingUser) {
             return res.status(400).send('이미 사용 중인 아이디입니다.');
         }
-    
-        if (req.session.email !== email || !req.session.verifiedAt || Date.now() - req.session.verifiedAt > 5 * 60 * 1000) {
+
+        // 이메일 인증 확인
+        if (req.session.email !== normalizedEmail || !req.session.verifiedAt || Date.now() - req.session.verifiedAt > 5 * 60 * 1000) {
             return res.redirect('/verifyEmail');  // 인증이 되지 않았다면 인증 페이지로 리디렉션
         }
-    
-        // 사용자 정보를 DB에 저장
-        await db.collection('user').insertOne({ nickname, userId, password: hash, email, phone, birth });
 
-        // 회원가입 후 로그인인 페이지로 리다이렉트
+        // 사용자 정보를 DB에 저장 (표준화된 이메일 사용)
+        await db.collection('user').insertOne({ nickname, userId, password: hash, email: normalizedEmail, phone, birth });
+
+        // 회원가입 후 로그인 페이지로 리다이렉트
         res.redirect('/login');
     } catch (error) {
         console.error('회원가입 에러:', error);
         res.status(500).send('서버 오류');  // 서버 오류 처리
-        console.log(req.body)
+        console.log(req.body);
     }
 });
+
 
 
 // id 중복확인
@@ -373,14 +428,108 @@ app.post('/verify-code', (req, res) => {
         console.log(email)
         req.session.verifiedAt = Date.now();  // 인증 완료 시간
         res.json({ success: true, message: '이메일 인증이 완료되었습니다.' });
-        console.log('Session Data after verification:', req.session);
 
     } else {
         res.json({ success: false, message: '인증 코드가 잘못되었습니다.' });
     }
 });
 
-//비번찾기 이메일인증증
-app.post('/send-verification-find', async (req, res) => {
-    
+// 비밀번호 찾기 이메일 인증
+app.post('/find-password', async (req, res) => {
+
+    const { email } = req.body;
+    const currentTime = Date.now(); // 현재 시간
+    const user = await db.collection('user').findOne({ email: email });
+
+    if (!user) {
+        return res.json({ success: false, message: '이메일이 등록되지 않았습니다.' });
+    }
+
+    // 5초 내 중복 요청 방지
+    if (currentTime - lastRequestTime < 5000) {
+        return res.json({ success: false, message: '5초 이내에 중복 요청은 불가능합니다.' });
+    }
+
+    try {
+        userEmail = email;
+
+        // 6자리 랜덤 인증 코드 생성
+        generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
+        codeGeneratedTime = currentTime; // 인증 코드 생성 시간 기록
+        console.log(`인증 코드: ${generatedCode} (이메일: ${email})`);
+        // 이메일 발송
+        await transporter.sendMail({
+            from: '"Your Service" <your-email@gmail.com>',
+            to: email,
+            subject: '이메일 인증 코드',
+            text: `인증번호: ${generatedCode}`,
+        });
+        req.session.email = email;
+        // 인증 코드 발송 후 마지막 요청 시간 기록
+        lastRequestTime = currentTime;
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error(error);
+        res.json({ success: false });
+    }
 });
+
+// 비밀번호 재설정 
+app.post('/reset-password', async (req, res) => {
+    const { email, password } = req.body; // 이메일과 새로운 비밀번호를 받음
+
+    if (!email || !password) {
+        return res.status(400).json({ success: false, message: '필수 정보가 누락되었습니다.' });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase(); // 이메일 표준화 (소문자로 변환 및 공백 제거)
+
+    try {
+        // 이메일로 사용자 찾기 (표준화된 이메일로 검색)
+        const user = await db.collection('user').findOne(
+            { email: normalizedEmail }, // 표준화된 이메일로 검색
+            { collation: { locale: 'en', strength: 2 } } // 대소문자 구분 없는 검색
+        );
+
+        console.log(normalizedEmail);
+        console.log(user);
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: '해당 이메일을 가진 사용자를 찾을 수 없습니다.' });
+        }
+
+        // 비밀번호 삭제 (이메일로 찾은 데이터에서)
+        const deleteResult = await db.collection('user').deleteOne({ email: normalizedEmail });
+
+        if (deleteResult.deletedCount === 1) {
+            // 새로운 비밀번호 해시화
+            const hashedPassword = await bcryptjs.hash(password, 10);
+
+            // 새로운 비밀번호 추가 (새로운 사용자로 삽입)
+            const insertResult = await db.collection('user').insertOne({
+                nickname: user.nickname,
+                userId: user.userId,                
+                password: hashedPassword,
+                email: normalizedEmail,
+                phone: user.phone,
+                birth: user.birth
+            });
+
+            if (insertResult.insertedId) {  // insertedId가 존재하면 삽입 성공
+                return res.json({ success: true, message: '비밀번호가 성공적으로 재설정되었습니다.' });
+            } else {
+                return res.status(500).json({ success: false, message: '새로운 비밀번호 추가 중 오류가 발생했습니다.' });
+            }
+        } else {
+            return res.status(500).json({ success: false, message: '비밀번호 삭제 중 오류가 발생했습니다.' });
+        }
+    } catch (error) {
+        console.error('Error resetting password:', error);
+        return res.status(500).json({ success: false, message: '서버 오류가 발생했습니다.' });
+    }
+});
+
+
+
+

@@ -124,7 +124,7 @@
     "mkdirp": "^1.0.4",
     "mongodb": "^6.9.0",
     "mongodb-connection-string-url": "^3.0.1",
-    "mongoose": "^8.7.2",
+    "mongoose": "^8.9.2",
     "ms": "^2.0.0",
     "negotiator": "^0.6.3",
     "node-addon-api": "^5.1.0",
