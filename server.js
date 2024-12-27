@@ -372,6 +372,27 @@ app.post('/m-delete', async (req, res) => {
 
 })
 
+// check-email API
+app.post('/check-email', async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ success: false, message: '이메일이 제공되지 않았습니다.' });
+    }
+
+    try {
+        // 데이터베이스에서 이메일 존재 여부 확인
+        const user = await db.collection('user').findOne({ email: email });
+        if (user) {
+            return res.json({ exists: true }); // 이메일이 이미 존재함
+        }
+        return res.json({ exists: false }); // 이메일이 존재하지 않음
+    } catch (error) {
+        console.error('Error checking email:', error);
+        return res.status(500).json({ success: false, message: '서버 에러가 발생했습니다.' });
+    }
+});
+
 let generatedCode = ''; // 서버 메모리에 인증 코드를 저장합니다.
 let userEmail = ''; // 인증을 요청한 이메일
 let lastRequestTime = 0; // 마지막 요청 시간
@@ -509,7 +530,7 @@ app.post('/reset-password', async (req, res) => {
             // 새로운 비밀번호 추가 (새로운 사용자로 삽입)
             const insertResult = await db.collection('user').insertOne({
                 nickname: user.nickname,
-                userId: user.userId,                
+                userId: user.userId,
                 password: hashedPassword,
                 email: normalizedEmail,
                 phone: user.phone,

@@ -67,22 +67,36 @@
         function sendVerification() {
             const email = document.getElementById('email').value; // 이메일 값을 가져옴
 
-            fetch('/send-verification', {
+            fetch('/check-email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: email }), // 이메일 전송
+                body: JSON.stringify({ email: email }), // 이메일 확인 요청
             })
                 .then(response => response.json())
                 .then(result => {
-                    if (result.success) {
-                        alert('이메일로 인증번호가 전송되었습니다.');
-                        document.getElementById('email-form').style.display = 'none'; // 이메일 폼 숨기기
-                        document.getElementById('verify-form').style.display = 'block'; // 인증 폼 보이기
-
-                        // 숨겨진 이메일 필드에 이메일 값 설정
-                        document.getElementById('hidden-email').value = email;
+                    if (result.exists) {
+                        // 이메일이 이미 존재하는 경우
+                        alert('이메일이 이미 사용 중입니다. 다른 이메일을 입력해주세요.');
                     } else {
-                        alert('이메일 전송에 실패했습니다. 다시 시도해주세요.');
+                        // 이메일 중복이 없는 경우, 인증 이메일 전송
+                        fetch('/send-verification', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email: email }), // 이메일 전송
+                        })
+                            .then(response => response.json())
+                            .then(result => {
+                                if (result.success) {
+                                    alert('이메일로 인증번호가 전송되었습니다.');
+                                    document.getElementById('email-form').style.display = 'none'; // 이메일 폼 숨기기
+                                    document.getElementById('verify-form').style.display = 'block'; // 인증 폼 보이기
+
+                                    // 숨겨진 이메일 필드에 이메일 값 설정
+                                    document.getElementById('hidden-email').value = email;
+                                } else {
+                                    alert('이메일 전송에 실패했습니다. 다시 시도해주세요.');
+                                }
+                            });
                     }
                 });
         }
