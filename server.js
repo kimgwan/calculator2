@@ -57,6 +57,12 @@ new MongoClient(url).connect().then((client) => {
 app.get('/', (req, res) => {
     res.render('index.ejs')
 })
+app.get('/findPass', (req, res) => {
+    res.render('findPass.ejs')
+})
+app.get('/verifyEmail', (req, res) => {
+    res.render('verifyEmail.ejs')
+})
 
 // 재료관리 페이지
 app.get('/materials', async (req, res) => {
@@ -147,10 +153,40 @@ app.post('/delProduct', async (req, res) => {
 
 
 // 회원가입 페이지
+// app.get('/signup', (req, res) => {
+//     if (req.session.email && Date.now() - req.session.verifiedAt <= 5 * 60 * 1000) {
+//         res.render('signup.ejs', { email: req.session.email });
+//     } else {
+//         res.redirect('/verifyEmail');  // 인증이 만료되었으면 인증 페이지로 리디렉션
+//     }
+// });
 app.get('/signup', (req, res) => {
-    res.render('signup.ejs')
-})
-//노드메일러 설정정
+    // 먼저 세션 데이터 확인
+    const email = req.session.email;
+    const verifiedAt = req.session.verifiedAt;
+    
+    // 이메일과 인증 여부를 미리 판단
+    let emailVerified = false;
+    if (email && verifiedAt) {
+        const currentTime = Date.now();
+        
+        // 인증 시간이 5분 이내인지 확인
+        if (currentTime - verifiedAt <= 5 * 60 * 1000) {
+            emailVerified = true;
+        }
+    }
+
+    // 인증 여부에 따른 처리
+    if (emailVerified) {
+        // 인증된 이메일을 전달
+        res.render('signup.ejs', { email, emailVerified });
+    } else {
+        // 인증되지 않거나 인증이 만료되었으면 인증 페이지로 리디렉션
+        res.redirect('/verifyEmail');
+    }
+});
+
+//노드메일러 설정
 const transporter = nodemailer.createTransport({
     service: 'Gmail',
     auth: {
@@ -176,7 +212,11 @@ app.post('/register', async (req, res) => {
         if (existingUser) {
             return res.status(400).send('이미 사용 중인 아이디입니다.');
         }
-
+    
+        if (req.session.email !== email || !req.session.verifiedAt || Date.now() - req.session.verifiedAt > 5 * 60 * 1000) {
+            return res.redirect('/verifyEmail');  // 인증이 되지 않았다면 인증 페이지로 리디렉션
+        }
+    
         // 사용자 정보를 DB에 저장
         await db.collection('user').insertOne({ nickname, userId, password: hash, email, phone, birth });
 
@@ -186,69 +226,6 @@ app.post('/register', async (req, res) => {
         console.error('회원가입 에러:', error);
         res.status(500).send('서버 오류');  // 서버 오류 처리
         console.log(req.body)
-    }
-});
-
-// 토큰 만료 확인 함수
-const isTokenExpired = (record) => {
-    const now = new Date();
-    const expiresAt = new Date(record.createdAt);
-    expiresAt.setHours(expiresAt.getMinutes() + 5); // 토큰 만료 시간 5분 설정정
-    return now > expiresAt;
-};
-
-app.get('/verify-email', async (req, res) => {
-    try {
-        const email = req.body.email;  // 폼에서 전달된 이메일을 가져옵니다.
-
-        // 이메일이 제대로 전달되었는지 확인
-        if (!email) {
-            return res.status(400).send('이메일을 입력해주세요.');
-        }
-
-        const { token } = req.query;
-        // 이메일 중복 체크
-        const existingEmail = await db.collection('user').findOne({ email });
-        if (existingEmail) {
-            return res.status(400).send('이미 사용 중인 이메일입니다.');
-        } else {
-            //이메일 인증 토큰 생성
-            const verificationToken = crypto.randomBytes(32).toString('hex');
-            // 이메일 전송
-            const verificationUrl = `http://localhost:3000/verify-email?token=${verificationToken}`;
-            await transporter.sendMail({
-                from: process.env.EMAIL_USER,
-                to: email,
-                subject: '사장계산기의 회원가입 인증을 해주세요.',
-                html: `<p>아래 링크를 클릭해 이메일을 인증하세요:</p>
-           <a href="${verificationUrl}">${verificationUrl}</a>`,
-            });
-        }
-
-        // 인증 토큰으로 사용자 찾기
-        const user = await db.collection('user').findOne({ verificationToken: token });
-
-        if (!user) {
-            return res.status(400).send('유효하지 않은 인증 토큰입니다.');
-        }
-
-        console.log('확인')
-
-        // 만료 확인
-        if (isTokenExpired(record)) {
-            return res.status(400).send('인증 링크가 만료되었습니다.');
-        }
-
-        // 이메일 인증 완료 처리
-        await db.collection('user').updateOne(
-            { _id: user._id },
-            { $set: { isVerified: true }, $unset: { verificationToken: "" } }
-        );
-
-        res.status(200).send('이메일 인증이 완료되었습니다.');
-    } catch (error) {
-        console.error('이메일 인증 에러:', error);
-        res.status(500).send('서버 오류');
     }
 });
 
@@ -339,3 +316,71 @@ app.post('/m-delete', async (req, res) => {
     res.redirect('/materials')
 
 })
+
+let generatedCode = ''; // 서버 메모리에 인증 코드를 저장합니다.
+let userEmail = ''; // 인증을 요청한 이메일
+let lastRequestTime = 0; // 마지막 요청 시간
+let codeGeneratedTime = 0; // 인증 코드가 생성된 시간
+
+// 이메일인증
+app.post('/send-verification', async (req, res) => {
+    const currentTime = Date.now(); // 현재 시간
+
+    // 5초 내 중복 요청 방지
+    if (currentTime - lastRequestTime < 5000) {
+        return res.json({ success: false, message: '5초 이내에 중복 요청은 불가능합니다.' });
+    }
+
+    try {
+        const { email } = req.body;
+        userEmail = email;
+
+        // 6자리 랜덤 인증 코드 생성
+        generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
+        codeGeneratedTime = currentTime; // 인증 코드 생성 시간 기록
+        console.log(`인증 코드: ${generatedCode} (이메일: ${email})`);
+        // 이메일 발송
+        await transporter.sendMail({
+            from: '"Your Service" <your-email@gmail.com>',
+            to: email,
+            subject: '이메일 인증 코드',
+            text: `인증번호: ${generatedCode}`,
+        });
+        req.session.email = email;
+        // 인증 코드 발송 후 마지막 요청 시간 기록
+        lastRequestTime = currentTime;
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error(error);
+        res.json({ success: false });
+    }
+});
+
+// 인증번호 확인 API
+app.post('/verify-code', (req, res) => {
+    const { code, email } = req.body;
+    const currentTime = Date.now();
+
+    // 인증 코드가 생성된 지 5분이 경과했는지 확인
+    if (currentTime - codeGeneratedTime > 5 * 60 * 1000) {
+        return res.json({ success: false, message: '인증 코드가 만료되었습니다. 다시 요청해주세요.' });
+    }
+
+    if (code === generatedCode) {
+        // 인증 성공 시 이메일과 인증 완료 시간을 세션에 저장
+        req.session.email = email;
+        console.log(email)
+        req.session.verifiedAt = Date.now();  // 인증 완료 시간
+        res.json({ success: true, message: '이메일 인증이 완료되었습니다.' });
+        console.log('Session Data after verification:', req.session);
+
+    } else {
+        res.json({ success: false, message: '인증 코드가 잘못되었습니다.' });
+    }
+});
+
+//비번찾기 이메일인증증
+app.post('/send-verification-find', async (req, res) => {
+    
+});

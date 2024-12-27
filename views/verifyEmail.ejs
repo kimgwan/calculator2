@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>이메일 인증</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://ai-public.creatie.ai/gen_page/tailwind-custom.css" rel="stylesheet" />
+    <script
+        src="https://cdn.tailwindcss.com/3.4.5?plugins=forms@0.5.7,typography@0.5.13,aspect-ratio@0.4.2,container-queries@0.1.1"></script>
+    <script src="https://ai-public.creatie.ai/gen_page/tailwind-config.min.js" data-color="#000000"
+        data-border-radius="small"></script>
+</head>
+
+<body class="bg-gray-50 font-[&#39;Noto_Sans_KR&#39;]">
+    <div class="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div class="sm:mx-auto sm:w-full sm:max-w-md">
+            <img class="mx-auto h-12 w-auto" src="/images/logo.png" alt="Logo" />
+            <h2 class="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">이메일 인증</h2>
+        </div>
+
+        <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+            <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+                <form id="email-form" class="space-y-6">
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700">이메일</label>
+                        <div class="mt-1">
+                            <input type="email" id="email" required
+                                class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-custom focus:outline-none focus:ring-custom sm:text-sm" />
+                        </div>
+                        <button type="button" id="send-email"
+                            class="mt-4 w-full justify-center bg-custom px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-custom/90 focus:outline-none focus:ring-2 focus:ring-custom focus:ring-offset-2"
+                            onclick="sendVerification()">메일 인증하기</button>
+                    </div>
+                </form>
+
+
+                <form id="verify-form" style="display: none;" class="space-y-6">
+                    <div>
+                        <label for="verification-code" class="block text-sm font-medium text-gray-700">인증번호</label>
+                        <div class="mt-1">
+                            <input type="text" id="verification-code" required
+                                class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-custom focus:outline-none focus:ring-custom sm:text-sm" />
+                        </div>
+                        <!-- 이메일 값을 숨겨놓은 필드 -->
+                        <input type="email" id="hidden-email" name="email" value="" hidden readonly required>
+
+                        <button type="button" id="verify-code"
+                            class="mt-4 w-full justify-center bg-custom px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-custom/90 focus:outline-none focus:ring-2 focus:ring-custom focus:ring-offset-2"
+                            onclick="verifyCode()">인증 확인</button>
+                    </div>
+                </form>
+
+
+                <form id="registration-form" style="display: none;" class="space-y-6">
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let emailVerified = false; // To track whether email is verified
+
+        function sendVerification() {
+            const email = document.getElementById('email').value; // 이메일 값을 가져옴
+
+            fetch('/send-verification', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email }), // 이메일 전송
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        alert('이메일로 인증번호가 전송되었습니다.');
+                        document.getElementById('email-form').style.display = 'none'; // 이메일 폼 숨기기
+                        document.getElementById('verify-form').style.display = 'block'; // 인증 폼 보이기
+
+                        // 숨겨진 이메일 필드에 이메일 값 설정
+                        document.getElementById('hidden-email').value = email;
+                    } else {
+                        alert('이메일 전송에 실패했습니다. 다시 시도해주세요.');
+                    }
+                });
+        }
+
+
+        function verifyCode() {
+            const verificationCode = document.getElementById('verification-code').value;
+            const email = document.getElementById('hidden-email').value; // 숨겨진 이메일 필드에서 이메일 가져오기
+
+            fetch('/verify-code', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: verificationCode, email: email }), // 인증 코드와 이메일 전송
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        emailVerified = true; // 이메일 인증 완료 표시
+                        document.getElementById('registration-form').style.display = 'block'; // 회원가입 폼 보이기
+                        alert('이메일 인증이 완료되었습니다!');
+
+                        // 인증 완료 후 /signup으로 리디렉션
+                        window.location.href = '/signup'; // Express에서 이 경로로 이동
+                    } else {
+                        alert('인증번호가 올바르지 않거나 만료되었습니다. 다시 확인해주세요.');
+                    }
+                });
+        }
+
+        function registerUser() {
+            if (!emailVerified) {
+                alert('이메일 인증을 완료해야 회원가입할 수 있습니다!');
+                return;
+            }
+
+            const password = document.getElementById('password').value;
+            const email = document.getElementById('email').value;
+
+            fetch('/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        alert('회원가입이 완료되었습니다!');
+                    } else {
+                        alert('회원가입에 실패했습니다. 다시 시도해주세요.');
+                    }
+                });
+        }
+    </script>
+</body>
+
+</html>

@@ -58,12 +58,8 @@
                     <div>
                             <label for="email" class="block text-sm font-medium text-gray-700">이메일</label>
                             <div class="mt-1">
-                                <input id="email" name="email" type="email" autocomplete="email" required=""
+                                <input id="email" name="email" type="email" autocomplete="email" value="<%= email %>" required readonly
                                     class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-custom focus:outline-none focus:ring-custom sm:text-sm" />
-                            </div>
-                            <div>
-                                <button type="submit" style="margin-top: 10px;" onclick="changeAction('/verify-email');"
-                                    class="!rounded-button flex w-full justify-center bg-custom px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-custom/90 focus:outline-none focus:ring-2 focus:ring-custom focus:ring-offset-2">이메일일 인증</button>
                             </div>
                     </div>
 
