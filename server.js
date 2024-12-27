@@ -8,7 +8,7 @@ const express = require('express')
 const app = express()
 const { MongoClient, ObjectId, BSONError } = require('mongodb');
 const methodOverride = require('method-override')
-const bcrypt = require('bcryptjs');
+const bcryptjs = require('bcryptjs');
 const MongoStore = require('connect-mongo')
 
 app.use(methodOverride('_method'))
@@ -95,14 +95,15 @@ app.post('/save', async (req, res) => {
             res.send('중량은 필수입력입니다.')
         } else {
             await db.collection('materials').insertOne
-                ({ userId: req.body.userId, 
-                    mname: req.body.mname, 
-                    mprice: req.body.mprice, 
-                    mcap: req.body.mcap, 
-                    mmemo: req.body.mmemo, 
-                    cUnit: req.body.cUnit, 
-                    capUnit: req.body.capUnit, 
-                    minPrice: req.body.minPrice, 
+                ({
+                    userId: req.body.userId,
+                    mname: req.body.mname,
+                    mprice: req.body.mprice,
+                    mcap: req.body.mcap,
+                    mmemo: req.body.mmemo,
+                    cUnit: req.body.cUnit,
+                    capUnit: req.body.capUnit,
+                    minPrice: req.body.minPrice,
                     minCap: req.body.minCap
                 })
 
@@ -149,7 +150,14 @@ app.post('/delProduct', async (req, res) => {
 app.get('/signup', (req, res) => {
     res.render('signup.ejs')
 })
-
+//노드메일러 설정정
+const transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    },
+});
 // 회원가입 기능 (이용약관 - 개인정보 수집 등  메일링서비스, 자동 가입 방지)
 app.post('/register', async (req, res) => {
     try {
@@ -160,6 +168,8 @@ app.post('/register', async (req, res) => {
         if (password.length < 8) {
             return res.status(400).send('비밀번호는 최소 8자리 이상이어야 합니다.');
         }
+        // 비밀번호를 해시화
+        const hash = await bcryptjs.hash(password, 10);
 
         // 아이디 중복 체크
         const existingUser = await db.collection('user').findOne({ userId });
@@ -167,14 +177,10 @@ app.post('/register', async (req, res) => {
             return res.status(400).send('이미 사용 중인 아이디입니다.');
         }
 
-        // 비밀번호를 해시화
-        const hash = await bcrypt.hash(password, 10);
-        console.log(hash);
-
         // 사용자 정보를 DB에 저장
         await db.collection('user').insertOne({ nickname, userId, password: hash, email, phone, birth });
 
-        // 회원가입 후 메인 페이지로 리다이렉트
+        // 회원가입 후 로그인인 페이지로 리다이렉트
         res.redirect('/login');
     } catch (error) {
         console.error('회원가입 에러:', error);
@@ -182,6 +188,70 @@ app.post('/register', async (req, res) => {
         console.log(req.body)
     }
 });
+
+// 토큰 만료 확인 함수
+const isTokenExpired = (record) => {
+    const now = new Date();
+    const expiresAt = new Date(record.createdAt);
+    expiresAt.setHours(expiresAt.getMinutes() + 5); // 토큰 만료 시간 5분 설정정
+    return now > expiresAt;
+};
+
+app.get('/verify-email', async (req, res) => {
+    try {
+        const email = req.body.email;  // 폼에서 전달된 이메일을 가져옵니다.
+
+        // 이메일이 제대로 전달되었는지 확인
+        if (!email) {
+            return res.status(400).send('이메일을 입력해주세요.');
+        }
+
+        const { token } = req.query;
+        // 이메일 중복 체크
+        const existingEmail = await db.collection('user').findOne({ email });
+        if (existingEmail) {
+            return res.status(400).send('이미 사용 중인 이메일입니다.');
+        } else {
+            //이메일 인증 토큰 생성
+            const verificationToken = crypto.randomBytes(32).toString('hex');
+            // 이메일 전송
+            const verificationUrl = `http://localhost:3000/verify-email?token=${verificationToken}`;
+            await transporter.sendMail({
+                from: process.env.EMAIL_USER,
+                to: email,
+                subject: '사장계산기의 회원가입 인증을 해주세요.',
+                html: `<p>아래 링크를 클릭해 이메일을 인증하세요:</p>
+           <a href="${verificationUrl}">${verificationUrl}</a>`,
+            });
+        }
+
+        // 인증 토큰으로 사용자 찾기
+        const user = await db.collection('user').findOne({ verificationToken: token });
+
+        if (!user) {
+            return res.status(400).send('유효하지 않은 인증 토큰입니다.');
+        }
+
+        console.log('확인')
+
+        // 만료 확인
+        if (isTokenExpired(record)) {
+            return res.status(400).send('인증 링크가 만료되었습니다.');
+        }
+
+        // 이메일 인증 완료 처리
+        await db.collection('user').updateOne(
+            { _id: user._id },
+            { $set: { isVerified: true }, $unset: { verificationToken: "" } }
+        );
+
+        res.status(200).send('이메일 인증이 완료되었습니다.');
+    } catch (error) {
+        console.error('이메일 인증 에러:', error);
+        res.status(500).send('서버 오류');
+    }
+});
+
 
 // id 중복확인
 app.post('/check-id', (req, res) => {
@@ -215,7 +285,7 @@ app.post('/check-id', (req, res) => {
                 return cb(null, false, { message: 'ID를 확인해 주세요.' });
             }
 
-            const isMatch = await bcrypt.compare(userPassword, result.password);
+            const isMatch = await bcryptjs.compare(userPassword, result.password);
             if (isMatch) {
                 return cb(null, result);
             } else {
