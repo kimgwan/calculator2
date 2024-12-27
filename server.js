@@ -551,6 +551,23 @@ app.post('/reset-password', async (req, res) => {
     }
 });
 
+// check-id API
+app.post('/id-check', async (req, res) => {
+    const { userId } = req.body;
 
+    if (!userId) {
+        return res.status(400).json({ success: false, message: '아이디디를 입력해주세요.' });
+    }
 
-
+    try {
+        // 데이터베이스에서 이메일 존재 여부 확인
+        const user = await db.collection('user').findOne({ userId: userId });
+        if (user) {
+            return res.json({ exists: true }); // 아이디 이미 존재함
+        }
+        return res.json({ exists: false }); // 아이디 존재하지 않음
+    } catch (error) {
+        console.error('Error checking email:', error);
+        return res.status(500).json({ success: false, message: '서버 에러가 발생했습니다.' });
+    }
+});
