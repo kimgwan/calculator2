@@ -93,7 +93,7 @@
 
             <div class="bg-white shadow rounded-lg overflow-hidden">
                 <div class="mb-6">
-                    <div class="relative max-w-md"><input type="text"
+                    <div class="relative max-w-md"><input id="searchInput" type="text"
                             class="block w-full border-gray-300 focus:ring-custom focus:border-custom sm:text-sm !rounded-button"
                             placeholder="재료 찾기" /><button
                             class="absolute inset-y-0 right-0 px-3 flex items-center !rounded-button bg-custom text-white"><i
@@ -153,13 +153,8 @@
             </div>
         </main>
 
-        <footer class="bg-white mt-8">
-            <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                <div class="text-center text-sm text-gray-500">
-                    © 2024 Product Management System. All rights reserved.
-                </div>
-            </div>
-        </footer>
+        
+        <%- include('footer.ejs') %>
         <script>
             document.querySelector('.mprice').addEventListener('input', function () {
                 calculateMinPrice(); // 입력이 변경될 때마다 계산
@@ -198,7 +193,21 @@
                     }
                 }
             }
-        
+
+            document.getElementById('searchInput').addEventListener('input', function () {
+                const filter = this.value.toLowerCase(); // 입력된 검색어
+                const rows = document.querySelectorAll('table tbody tr'); // 테이블의 모든 행
+
+                rows.forEach(row => {
+                    const materialName = row.querySelector('td:nth-child(1)').textContent.toLowerCase(); // 재료명
+                    if (materialName.includes(filter)) {
+                        row.style.display = ''; // 검색어가 포함되면 보이기
+                    } else {
+                        row.style.display = 'none'; // 검색어가 포함되지 않으면 숨기기
+                    }
+                });
+            });
+
         </script>
 
 </body>

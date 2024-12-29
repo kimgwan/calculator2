@@ -16,6 +16,7 @@
     "assign-deep": "^1.0.1",
     "assign-symbols": "^2.0.2",
     "async": "^3.2.6",
+    "axios": "^1.7.9",
     "balanced-match": "^1.0.2",
     "bcryptjs": "^2.4.3",
     "binary-extensions": "^2.3.0",

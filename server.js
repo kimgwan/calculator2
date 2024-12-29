@@ -53,10 +53,49 @@ new MongoClient(url).connect().then((client) => {
     console.log(err)
 })
 
-// 홈 페이지
-app.get('/', (req, res) => {
-    res.render('index.ejs')
+app.get('/a1', (req, res) => {
+    res.render('a1.ejs')
 })
+
+app.get('/a2', (req, res) => {
+    res.render('a2.ejs')
+})
+
+app.get('/a3', (req, res) => {
+    res.render('a3.ejs')
+})
+
+// 홈 페이지
+app.get('/', async (req, res) => {
+    try {
+        // 세션에서 인증 코드와 만료 시간을 확인
+        const { generatedCode, expiresAt, email, emailVerified } = req.session;
+        const currentTime = Date.now();
+
+        // expiresAt이 문자열이라면 Date 객체로 변환
+        const expirationTime = expiresAt instanceof Date ? expiresAt : new Date(expiresAt);
+
+        // 유효한 인증 코드가 있고, 만료 시간이 지나지 않았으면 삭제 처리
+        if (generatedCode && expirationTime > currentTime) {
+            // 세션에서 유효한 토큰 삭제
+            delete req.session.generatedCode;
+            delete req.session.expiresAt;
+            delete req.session.email;
+            delete req.session.emailVerified;
+        }
+
+        // index.ejs 렌더링
+        res.render('index.ejs');
+    } catch (error) {
+        console.error('서버 오류:', error);
+        res.status(500).send('서버 오류가 발생했습니다.');
+    }
+});
+
+app.get('/mypage', (req, res) => {
+    res.render('mypage.ejs')
+})
+
 app.get('/findPass', (req, res) => {
     res.render('findPass.ejs')
 })
@@ -243,15 +282,28 @@ const transporter = nodemailer.createTransport({
         pass: process.env.EMAIL_PASS,
     },
 });
-// 회원가입 기능 (이용약관 - 개인정보 수집 등  메일링서비스, 자동 가입 방지)
+// 회원가입 기능 (자동 가입 방지)
 app.post('/register', async (req, res) => {
     try {
         console.log(req.body);
-        const { userId, password, nickname, email, phone, birth } = req.body;
+        const { userId, password, nickname, email, terms, privacy, marketing } = req.body;
+
+        // 필수 체크박스 값 확인
+        if (!terms || !privacy) {
+            return res.status(400).json({ message: '필수 동의 항목을 체크해주세요.' });
+        }
+
+        // 마케팅 동의는 선택 사항 (체크되었는지 확인)
+        const marketingConsent = marketing === 'on';
+
+        // 아이디 유효성 검사
+        if (!/^[a-zA-Z0-9]+$/.test(userId)) {
+            return res.status(400).json({ message: '아이디는 영어와 숫자만 사용할 수 있습니다.' });
+        }
 
         // 비밀번호 최소 8자리 이상 체크
         if (password.length < 8) {
-            return res.status(400).send('비밀번호는 최소 8자리 이상이어야 합니다.');
+            return res.status(400).json({ message: '비밀번호는 최소 8자리 이상이어야 합니다.' });
         }
 
         // 비밀번호를 해시화
@@ -263,27 +315,32 @@ app.post('/register', async (req, res) => {
         // 아이디 중복 체크
         const existingUser = await db.collection('user').findOne({ userId });
         if (existingUser) {
-            return res.status(400).send('이미 사용 중인 아이디입니다.');
+            return res.status(400).json({ message: '이미 사용 중인 아이디입니다.' });
         }
 
         // 이메일 인증 확인
         if (req.session.email !== normalizedEmail || !req.session.verifiedAt || Date.now() - req.session.verifiedAt > 5 * 60 * 1000) {
-            return res.redirect('/verifyEmail');  // 인증이 되지 않았다면 인증 페이지로 리디렉션
+            return res.redirect('/verifyEmail'); // 인증이 되지 않았다면 인증 페이지로 리디렉션
         }
 
-        // 사용자 정보를 DB에 저장 (표준화된 이메일 사용)
-        await db.collection('user').insertOne({ nickname, userId, password: hash, email: normalizedEmail, phone, birth });
+        // 사용자 정보를 DB에 저장
+        await db.collection('user').insertOne({
+            nickname,
+            userId,
+            password: hash,
+            email: normalizedEmail,
+            terms: true,          // 필수 항목
+            privacy: true,        // 필수 항목
+            marketing: marketingConsent, // 선택 항목
+        });
 
         // 회원가입 후 로그인 페이지로 리다이렉트
         res.redirect('/login');
     } catch (error) {
         console.error('회원가입 에러:', error);
-        res.status(500).send('서버 오류');  // 서버 오류 처리
-        console.log(req.body);
+        res.status(500).send('서버 오류'); // 서버 오류 처리
     }
 });
-
-
 
 // id 중복확인
 app.post('/check-id', (req, res) => {
@@ -414,18 +471,25 @@ app.post('/send-verification', async (req, res) => {
         // 6자리 랜덤 인증 코드 생성
         generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
         codeGeneratedTime = currentTime; // 인증 코드 생성 시간 기록
-        console.log(`인증 코드: ${generatedCode} (이메일: ${email})`);
+
+        const expiresAt = new Date(currentTime + 5 * 60 * 1000);
+
         // 이메일 발송
         await transporter.sendMail({
-            from: '"Your Service" <your-email@gmail.com>',
+            from: '"사장계산기 인증코드" <your-email@gmail.com>',
             to: email,
-            subject: '이메일 인증 코드',
+            subject: '이메일 인증 코드를 이메일 인증페이지에서 인증해주세요.',
             text: `인증번호: ${generatedCode}`,
         });
+
         req.session.email = email;
+        req.session.codeGeneratedTime = codeGeneratedTime; // 세션에 코드 생성 시간 저장
+        req.session.generatedCode = generatedCode; // 세션에 생성된 코드 저장
+        req.session.expiresAt = expiresAt; // 세션에 만료 시간 저장
+
         // 인증 코드 발송 후 마지막 요청 시간 기록
         lastRequestTime = currentTime;
-
+        console.log(`인증번호: ${generatedCode}`)
         res.json({ success: true });
     } catch (error) {
         console.error(error);
@@ -446,7 +510,6 @@ app.post('/verify-code', (req, res) => {
     if (code === generatedCode) {
         // 인증 성공 시 이메일과 인증 완료 시간을 세션에 저장
         req.session.email = email;
-        console.log(email)
         req.session.verifiedAt = Date.now();  // 인증 완료 시간
         res.json({ success: true, message: '이메일 인증이 완료되었습니다.' });
 
@@ -502,6 +565,10 @@ app.post('/reset-password', async (req, res) => {
 
     if (!email || !password) {
         return res.status(400).json({ success: false, message: '필수 정보가 누락되었습니다.' });
+    }
+
+    if (password.length < 8) {
+        return res.status(400).json({ success: false, message: '비밀번호는 8자 이상 작성해주세요.' });
     }
 
     const normalizedEmail = email.trim().toLowerCase(); // 이메일 표준화 (소문자로 변환 및 공백 제거)
@@ -569,5 +636,63 @@ app.post('/id-check', async (req, res) => {
     } catch (error) {
         console.error('Error checking email:', error);
         return res.status(500).json({ success: false, message: '서버 에러가 발생했습니다.' });
+    }
+});
+
+// 비밀번호확인
+app.post('/verify-password', async (req, res) => {
+    const { email, password } = req.body; // 클라이언트에서 받은 비밀번호
+    // 비밀번호 입력이 없으면 에러 반환
+    if (!password) {
+        return res.status(400).json({ success: false, message: '비밀번호를 입력해 주세요.' });
+    }
+
+    try {
+        // 사용자의 아이디나 다른 유니크한 필드를 통해 데이터베이스에서 사용자 조회
+        const user = await db.collection('user').findOne({ email: req.body.email }); // 예시: _id를 기준으로 사용자 조회
+        
+        if (!user) {
+            return res.status(404).json({ success: false, message: '사용자를 찾을 수 없습니다.' });
+        }
+
+        const storedHashedPassword = user.password; // 데이터베이스에서 가져온 해시된 비밀번호
+
+        // 입력된 평문 비밀번호와 저장된 해시된 비밀번호 비교
+        const isMatch = await bcryptjs.compare(password, storedHashedPassword);
+
+        if (isMatch) {
+            res.json({ success: true, message: '비밀번호가 확인되었습니다.' });
+        } else {
+            res.status(401).json({ success: false, message: '비밀번호가 틀렸습니다.' });
+        }
+    } catch (error) {
+        console.error('비밀번호 확인 중 오류:', error);
+        res.status(500).json({ success: false, message: '서버 오류가 발생했습니다. 다시 시도해주세요.' });
+    }
+});
+
+//탈퇴 회원 데이터 삭제
+app.post('/Withdrawal', async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ success: false, message: '이메일이 확인 되지않습니다.' });
+    }
+
+    try {
+        const user = await db.collection('user').findOne({ email: req.body.email });
+        
+        if (!user) {
+            return res.status(404).json({ success: false, message: '해당 이메일의 사용자를 찾을 수 없습니다.' });
+        }
+        await db.collection('user').deleteOne({ email: email });
+        await db.collection('materials').deleteMany({ userId: user.userId });
+        await db.collection('products').deleteMany({ userId: user.userId });
+        
+        
+        return res.json({ success: true, message: '회원 탈퇴와 관련 데이터 삭제가 완료되었습니다.' });
+    } catch (error) {
+        console.error('탈퇴처리 중 오류:', error);
+        res.status(500).json({ success: false, message: '서버 오류가 발생했습니다. 다시 시도해주세요.' });
     }
 });

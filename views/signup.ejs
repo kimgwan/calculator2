@@ -27,10 +27,11 @@
                     <div>
                         <label for="userId" class="block text-sm font-medium text-gray-700">아이디</label>
                         <div class="mt-1 relative flex items-center">
-                            <input id="userId" name="userId" type="text" autocomplete="email" required=""
+                            <input id="userId" name="userId" type="text" autocomplete="off"
+                                oninput="validateUserId(this)" required=""
                                 class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-custom focus:outline-none focus:ring-custom sm:text-sm" />
                             <button type="button" id="checkDuplication" style="margin-left: 10px;" onclick="idCheck()"
-                            class="!rounded-button flex w-1/3 justify-center bg-custom px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-custom/90 focus:outline-none focus:ring-2 focus:ring-custom focus:ring-offset-2">
+                                class="!rounded-button flex w-1/3 justify-center bg-custom px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-custom/90 focus:outline-none focus:ring-2 focus:ring-custom focus:ring-offset-2">
                                 중복 확인
                             </button>
                         </div>
@@ -42,15 +43,15 @@
                                 class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-custom focus:outline-none focus:ring-custom sm:text-sm" />
                         </div>
                     </div>
-                    <!-- <div>
-                        <label for="password_confirmation" class="block text-sm font-medium text-gray-700">비밀번호
+                    <div>
+                        <label for="password_confirm" class="block text-sm font-medium text-gray-700">비밀번호
                             확인</label>
                         <div class="mt-1 relative">
-                            <input id="password_confirmation" name="password_confirmation" type="password"
+                            <input id="password_confirm" name="password_confirm" type="password"
                                 autocomplete="new-password" required=""
                                 class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-custom focus:outline-none focus:ring-custom sm:text-sm" />
                         </div>
-                    </div> -->
+                    </div>
                     <div>
                         <label for="nickname" class="block text-sm font-medium text-gray-700">이름</label>
                         <div class="mt-1">
@@ -60,11 +61,12 @@
                     </div>
 
                     <div>
-                            <label for="email" class="block text-sm font-medium text-gray-700">이메일</label>
-                            <div class="mt-1">
-                                <input id="email" name="email" type="email" autocomplete="email" value="<%= email %>" required readonly
-                                    class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-custom focus:outline-none focus:ring-custom sm:text-sm" />
-                            </div>
+                        <label for="email" class="block text-sm font-medium text-gray-700">이메일</label>
+                        <div class="mt-1">
+                            <input id="email" name="email" type="email" autocomplete="email" value="<%= email %>"
+                                required readonly
+                                class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-custom focus:outline-none focus:ring-custom sm:text-sm" />
+                        </div>
                     </div>
 
 
@@ -84,6 +86,7 @@
                             </div>
                             <div class="ml-3">
                                 <label for="terms" class="text-sm text-gray-700">이용약관에 동의합니다</label>
+                                <button for="terms" id="Terms and Conditions of Use" class="text-sm text-gray-700">[자세히]</button>
                             </div>
                         </div>
                         <div class="flex items-start">
@@ -93,6 +96,7 @@
                             </div>
                             <div class="ml-3">
                                 <label for="privacy" class="text-sm text-gray-700">개인정보 수집에 동의합니다</label>
+                                    <button for="terms" id="Consent to the collection and use of personal information" class="text-sm text-gray-700">[자세히]</button>
                             </div>
                         </div>
                         <div class="flex items-start">
@@ -102,6 +106,7 @@
                             </div>
                             <div class="ml-3">
                                 <label for="marketing" class="text-sm text-gray-700">마케팅 수신에 동의합니다 (선택)</label>
+                                <button for="terms" id="Consent to receiving marketing" class="text-sm text-gray-700">[자세히]</button>
                             </div>
                         </div>
                     </div>
@@ -142,6 +147,8 @@
                 </p>
             </div>
         </div>
+        
+        <%- include('footer.ejs') %>
     </div>
     <script>
         // 폼의 action을 변경하는 함수
@@ -165,11 +172,35 @@
                     } else {
                         alert('사용가능한 아이디입니다.');
                     }
-                    
                 });
-                
         }
 
+        function validateUserId(input) {
+            const regex = /^[a-zA-Z0-9]*$/; // 영어와 숫자만 허용
+            if (!regex.test(input.value)) {
+                alert("아이디는 영어와 숫자만 사용할 수 있습니다.");
+                input.value = input.value.replace(/[^a-zA-Z0-9]/g, ""); // 허용되지 않은 문자는 제거
+            }
+        }
+
+
+        // 이용약관
+        document.getElementById('Terms and Conditions of Use').addEventListener('click', function() {
+            // 팝업 창 열기
+            window.open('/a1', 'popupWindow', 'width=600,height=400');
+        });
+
+        // 개인정보수집동의
+        document.getElementById('Consent to the collection and use of personal information').addEventListener('click', function() {
+            // 팝업 창 열기
+            window.open('/a2', 'popupWindow', 'width=600,height=400');
+        });
+
+        // 마케팅 수신 동의
+        document.getElementById('Consent to receiving marketing').addEventListener('click', function() {
+            // 팝업 창 열기
+            window.open('/a3', 'popupWindow', 'width=600,height=400');
+        });
     </script>
 </body>
 

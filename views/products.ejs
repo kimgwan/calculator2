@@ -44,8 +44,10 @@
                 <div class="bg-white shadow rounded-lg flex items-center space-x-6 p-6">
                     <div class="flex-1">
                         <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i
-                                    class="fas fa-search text-gray-400"></i></div><input type="text"
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                            <input id="searchInput" type="text"
                                 class="shadow-sm focus:ring-custom focus:border-custom block w-full pl-10 sm:text-sm border-gray-300 !rounded-button"
                                 placeholder="상품명 또는 상품코드로 검색" />
                         </div>
@@ -54,8 +56,8 @@
                         class="!rounded-button bg-custom text-white px-4 py-2 text-sm font-medium hover:bg-custom/90">검색</button>
                 </div>
                 <% if(productsData.length=='' ){ %>
-                    <p class="text-gray-500">아직 저장된 재료가 없어요.</p>
-                    <p class="text-gray-500">재료입력에서 재료를 추가해보세요.</p>
+                    <p class="text-gray-500">아직 저장된 상품 없어요.</p>
+                    <p class="text-gray-500">상품입력에서 상품을 추가해보세요.</p>
                     <% } else { %>
                         <% for (let i=0; i < productsData.length; i++) { %>
                             <form action="delProduct" method="POST">
@@ -72,7 +74,8 @@
                                             <div class="absolute right-0 top-0 flex space-x-2">
                                                 <button class="text-blue-600 hover:text-blue-800 mr-3 edit-btn"><i
                                                         class="fas fa-edit"></i></button>
-                                                <button type="submin" type="submit" class="text-red-600 hover:text-red-800 del-btn"><i
+                                                <button type="submin" type="submit"
+                                                    class="text-red-600 hover:text-red-800 del-btn"><i
                                                         class="fas fa-trash"></i></button>
                                             </div>
                                         </div>
@@ -185,15 +188,27 @@
                 </div>
         </div>
         </form>
-        <footer class="bg-white border-t border-gray-200 mt-8">
-            <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                <p class="text-center text-sm text-gray-500">© 2024 상품 관리 시스템. All rights reserved.</p>
-            </div>
-        </footer>
+        
+        <%- include('footer.ejs') %>
 
         <script>
 
-            const materialsData = <%- JSON.stringify(materialsData) %>
+            document.getElementById('searchInput').addEventListener('input', function () {
+                const filter = this.value.toLowerCase(); // 검색어를 소문자로 변환
+                const productDivs = document.querySelectorAll('.bg-white.shadow.rounded-lg.p-6.mt-6'); // 상품 목록의 모든 카드
+
+                productDivs.forEach(product => {
+                    const productName = product.querySelector('input[type="text"]').value.toLowerCase(); // 상품명
+                    if (productName.includes(filter)) {
+                        product.style.display = ''; // 검색어가 포함되면 보이기
+                    } else {
+                        product.style.display = 'none'; // 검색어가 포함되지 않으면 숨기기
+                    }
+                });
+            });
+
+
+            const materialsData = <% - JSON.stringify(materialsData) %>
 
                 // 모든 계산값을 더해서 totalValue에 반영하는 함수
                 function updateTotalValue() {

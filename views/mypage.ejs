@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Page</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://ai-public.creatie.ai/gen_page/tailwind-custom.css" rel="stylesheet" />
+    <script
+        src="https://cdn.tailwindcss.com/3.4.5?plugins=forms@0.5.7,typography@0.5.13,aspect-ratio@0.4.2,container-queries@0.1.1"></script>
+    <script src="https://ai-public.creatie.ai/gen_page/tailwind-config.min.js" data-color="#000000"
+        data-border-radius="small"></script>
+</head>
+
+<body class="min-h-screen bg-gray-50 font-[&#39;Noto_Sans_KR&#39;]">
+    <div class="flex min-h-screen flex-col items-center justify-center px-6 py-12 lg:px-8">
+        <div class="w-full max-w-md">
+            <div class="mb-10 flex flex-col items-center">
+                <img class="h-12 w-auto" src="/images/logo.png" alt="로고" />
+                <h2 class="mt-6 text-2xl font-semibold text-gray-900">내 정보</h2>
+                <p class="mt-2 text-sm text-gray-600">정보를 수정하거나 업데이트하세요.</p>
+            </div>
+
+            <div class=" space-y-6 bg-white px-8 py-10 shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
+
+                <div>
+                    <label for="userId" class="block text-sm font-medium text-gray-700">아이디</label>
+                    <div class="mt-2">
+                        <input id="id" name="userId" type="text" autocomplete="email" required=""
+                            class="block w-full rounded-md border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-custom sm:text-sm"
+                            value="사용자아이디" readonly />
+                    </div>
+                </div>
+
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">이메일</label>
+                    <div class="mt-2">
+                        <input id="email" name="email" type="email" required=""
+                            class="block w-full rounded-md border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-custom sm:text-sm"
+                            value="tpry2010@naver.com" readonly />
+                    </div>
+                </div>
+                <!-- 비밀번호변경 전 인증 모달시작 -->
+                <div id="preResetPasswordModal"
+                    class="hidden fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
+                    <div class="bg-white p-6 rounded-lg shadow-lg w-1/3">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-4">본인확인을 위해 비밀번호를 입력해주세요.</h2>
+                        <div>
+                            <label for="check-password" class="block text-sm font-medium text-gray-700">비밀번호</label>
+                            <div class="mt-2">
+                                <input id="check-reset-password" name="password" type="password" required=""
+                                    class="block w-full rounded-md border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-custom sm:text-sm" />
+                            </div>
+                        </div>
+                        <div class="flex justify-between mt-6">
+                            <button type="button" onclick="closeModal()"
+                                class="px-4 py-2 bg-custom text-white rounded-md hover:bg-custom/80">취소</button>
+                            <button type="button" onclick="checkResetPassword()"
+                                class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">확인</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- 비밀번호변경 전 인증 모달시작 -->
+                <!-- 비밀번호 변경 모달 시작 -->
+                <div id="resetPasswordModal"
+                    class="hidden fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
+                    <div class="bg-white p-6 rounded-lg shadow-lg w-1/3">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-4">비밀번호 변경</h2>
+                        <div>
+                            <label for="new-password" class="block text-sm font-medium text-gray-700">비밀번호</label>
+                            <div class="mt-2">
+                                <input id="new-password" name="password" type="password" required=""
+                                    class="block w-full rounded-md border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-custom sm:text-sm" />
+                            </div>
+                        </div>
+                        <div>
+                            <label for="confirm-password" class="block text-sm font-medium text-gray-700">비밀번호
+                                확인</label>
+                            <div class="mt-2">
+                                <input id="confirm-password" name="password" type="password" required=""
+                                    class="block w-full rounded-md border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-custom sm:text-sm" />
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between mt-6">
+                            <button type="button" onclick="closeModal()"
+                                class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-400">취소</button>
+                            <button type="button" onclick="resetPassword()"
+                                class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-400">저장</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- 비밀번호 변경 모달 끝 -->
+
+                <div class="flex justify-between items-center">
+                    <button type="button" onclick="preResetPasswordModal()"
+                        class="!rounded-button flex w-full justify-center bg-custom px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-custom/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-custom">
+                        비밀번호 변경
+                    </button>
+                </div>
+                <div class="flex justify-between items-center">
+                    <button type="submit" id="Withdrawal" onclick="WithdrawalwordModal()"
+                        class="!rounded-button flex w-full justify-center bg-red-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-custom">
+                        회원 탈퇴
+                    </button>
+                </div>
+                <!-- 회원탈퇴 모달시작 -->
+                <div id="WithdrawalwordModal"
+                    class="hidden fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
+                    <div class="bg-white p-6 rounded-lg shadow-lg w-1/3">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-4">본인확인을 위해 비밀번호를 입력해주세요.</h2>
+                        <div>
+                            <label for="check-password" class="block text-sm font-medium text-gray-700">비밀번호</label>
+                            <div class="mt-2">
+                                <input id="check-password" name="password" type="password" required=""
+                                    class="block w-full rounded-md border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-custom sm:text-sm" />
+                            </div>
+                        </div>
+                        <div class="flex justify-between mt-6">
+                            <button type="button" onclick="WithdrawalwordModalClose()"
+                                class="px-4 py-2 bg-custom text-white rounded-md hover:bg-custom/80">취소</button>
+                            <button type="button" onclick="checkPassword()"
+                                class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">확인</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- 회원탈퇴 모달 끝 -->
+                <!-- 회원탈퇴 확인 모달시작 -->
+                <div id="WithdrawalConfirmModal"
+                    class="hidden fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
+                    <div class="bg-white p-6 rounded-lg shadow-lg w-1/3">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-4"> 탈퇴 즉시 모든 저장된 데이터는 삭제되며,<br>이후 복구가 불가능합니다.
+                            <br>정말 탈퇴 하시겠습니까?
+                        </h2>
+                        <div class="flex justify-between mt-6">
+                            <button type="button" onclick="WithdrawalConfirmModalClose()"
+                                class="px-4 py-2 bg-custom text-white rounded-md hover:bg-custom/80">취소</button>
+                            <button type="button" onclick="Withdrawal()"
+                                class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">탈퇴하기</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- 회원탈퇴 확인 모달 끝 -->
+                
+            </div>
+        </div>
+    </div>
+
+    
+    <%- include('footer.ejs') %>
+    </div>
+
+    <script>
+        function preResetPasswordModal() { // 비밀번호 변경 모달 열기
+            document.getElementById('preResetPasswordModal').classList.remove('hidden');
+        }
+
+        function resetPasswordModal() { // 비밀번호 변경 모달 열기
+            document.getElementById('resetPasswordModal').classList.remove('hidden');
+        }
+
+        function closeModal() { // 비밀번호 변경 모달 닫기            
+            document.getElementById('preResetPasswordModal').classList.add('hidden');
+            document.getElementById('resetPasswordModal').classList.add('hidden');
+        }
+
+        function checkResetPassword() {//비밀번호 확인
+            const password = document.getElementById('check-reset-password').value;
+            const email = document.getElementById('email').value;
+
+            if (!password) {
+                alert('비밀번호를 입력해 주세요.');
+                return;
+            }
+
+            // 비밀번호를 서버로 전송
+            fetch('/verify-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email: email, password: password }) // 비밀번호를 JSON 형태로 전송
+            })
+                .then(response => response.json()) // 응답을 JSON으로 처리
+                .then(data => {
+                    if (data.success) {
+                        alert('비밀번호가 확인되었습니다.');
+                        resetPasswordModal() //탈퇴 마지막 확인 모달열기
+                    } else {
+                        alert('비밀번호가 틀렸습니다. 다시 시도해주세요.');
+                    }
+                })
+                .catch(error => {
+                    console.error('서버 오류:', error);
+                    alert('비밀번호 확인 중 오류가 발생했습니다. 다시 시도해주세요.');
+                });
+        }
+
+        function resetPassword() { //비밀번호 변경 함수
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const email = document.getElementById('email').value;
+
+            if (newPassword !== confirmPassword) {
+                alert('비밀번호가 일치하지 않습니다. 다시 확인해주세요.');
+                return;
+            }
+
+            if (newPassword.length < 8) {
+                alert('비밀번호는 8자 이상 작성해주세요.');
+                return;
+            }
+
+            fetch('/reset-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email, password: newPassword }),
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        alert('비밀번호가 성공적으로 재설정되었습니다!');
+                        window.location.href = '/login';
+                    } else {
+                        alert(result.message || '비밀번호 변경경에 실패했습니다. 다시 시도해주세요.');
+                    }
+                });
+        }
+
+        function WithdrawalwordModal() { // 회원탈퇴 모달 열기
+            document.getElementById('WithdrawalwordModal').classList.remove('hidden');
+        }
+
+        function WithdrawalwordModalClose() { // 회원탈퇴 변경 모달 닫기
+            document.getElementById('WithdrawalwordModal').classList.add('hidden');
+        }
+
+        function WithdrawalConfirmModal() { // 회원탈퇴 확인 모달 열기
+            document.getElementById('WithdrawalConfirmModal').classList.remove('hidden');
+        }
+
+        function WithdrawalConfirmModalClose() { // 회원탈퇴 확인 모달 닫기
+            document.getElementById('WithdrawalConfirmModal').classList.add('hidden');
+            document.getElementById('WithdrawalwordModal').classList.add('hidden');
+        }
+
+        function checkPassword() {//비밀번호 확인
+            const password = document.getElementById('check-password').value;
+            const email = document.getElementById('email').value;
+
+            if (!password) {
+                alert('비밀번호를 입력해 주세요.');
+                return;
+            }
+
+            // 비밀번호를 서버로 전송
+            fetch('/verify-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email: email, password: password }) // 비밀번호를 JSON 형태로 전송
+            })
+                .then(response => response.json()) // 응답을 JSON으로 처리
+                .then(data => {
+                    if (data.success) {
+                        alert('비밀번호가 확인되었습니다.');
+                        WithdrawalConfirmModal() //탈퇴 마지막 확인 모달열기
+                    } else {
+                        alert('비밀번호가 틀렸습니다. 다시 시도해주세요.');
+                    }
+                })
+                .catch(error => {
+                    console.error('서버 오류:', error);
+                    alert('비밀번호 확인 중 오류가 발생했습니다. 다시 시도해주세요.');
+                });
+        }
+
+        // 회원탈퇴
+        function Withdrawal() {
+            const email = document.getElementById('email').value;
+
+            fetch('/Withdrawal', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email: email })
+
+            })
+                .then(response => response.json()) // 응답을 JSON으로 처리
+                .then(data => {
+
+                    if (data.success) {
+                        alert('그동안 이용해 주셔서 감사합니다.');
+                        window.location.href = '/';
+                    }
+                })
+                .catch(error => {
+                    console.error('서버 오류:', error);
+                    alert('비밀번호 확인 중 오류가 발생했습니다. 다시 시도해주세요.');
+                });
+        }
+    </script>
+</body>
+
+</html>
