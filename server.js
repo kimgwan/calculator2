@@ -320,7 +320,7 @@ app.post('/register', async (req, res) => {
 
         // 이메일 인증 확인
         if (req.session.email !== normalizedEmail || !req.session.verifiedAt || Date.now() - req.session.verifiedAt > 5 * 60 * 1000) {
-            return res.redirect('/verifyEmail'); // 인증이 되지 않았다면 인증 페이지로 리디렉션
+            return res.status(400).json({ message: '이메일 인증이 필요합니다.' });
         }
 
         // 사용자 정보를 DB에 저장
@@ -334,13 +334,15 @@ app.post('/register', async (req, res) => {
             marketing: marketingConsent, // 선택 항목
         });
 
-        // 회원가입 후 로그인 페이지로 리다이렉트
-        res.redirect('/login');
+        // 회원가입 성공 메시지 반환
+        res.json({ message: '회원가입이 완료되었습니다.' });
+
     } catch (error) {
         console.error('회원가입 에러:', error);
-        res.status(500).send('서버 오류'); // 서버 오류 처리
+        res.status(500).send('서버 오류');
     }
 });
+
 
 // id 중복확인
 app.post('/check-id', (req, res) => {
@@ -650,7 +652,7 @@ app.post('/verify-password', async (req, res) => {
     try {
         // 사용자의 아이디나 다른 유니크한 필드를 통해 데이터베이스에서 사용자 조회
         const user = await db.collection('user').findOne({ email: req.body.email }); // 예시: _id를 기준으로 사용자 조회
-        
+
         if (!user) {
             return res.status(404).json({ success: false, message: '사용자를 찾을 수 없습니다.' });
         }
@@ -681,15 +683,15 @@ app.post('/Withdrawal', async (req, res) => {
 
     try {
         const user = await db.collection('user').findOne({ email: req.body.email });
-        
+
         if (!user) {
             return res.status(404).json({ success: false, message: '해당 이메일의 사용자를 찾을 수 없습니다.' });
         }
         await db.collection('user').deleteOne({ email: email });
         await db.collection('materials').deleteMany({ userId: user.userId });
         await db.collection('products').deleteMany({ userId: user.userId });
-        
-        
+
+
         return res.json({ success: true, message: '회원 탈퇴와 관련 데이터 삭제가 완료되었습니다.' });
     } catch (error) {
         console.error('탈퇴처리 중 오류:', error);
