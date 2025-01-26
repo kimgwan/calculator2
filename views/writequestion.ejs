@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>문의/건의사항 작성</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://ai-public.creatie.ai/gen_page/tailwind-custom.css" rel="stylesheet">
+    <script
+        src="https://cdn.tailwindcss.com/3.4.5?plugins=forms@0.5.7,typography@0.5.13,aspect-ratio@0.4.2,container-queries@0.1.1"></script>
+    <script src="https://ai-public.creatie.ai/gen_page/tailwind-config.min.js" data-color="#000000"
+        data-border-radius='small'></script>
+</head>
+
+<body class="bg-gray-50 font-[Noto Sans KR]">
+    <%- include('nav.ejs') %>
+        <div class="min-h-screen flex flex-col">
+            <header class="bg-white border-b border-gray-200">
+                <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex justify-between items-center h-16">
+                        <div class="flex items-center">
+                            <button id="backButton" class="text-gray-500 hover:text-gray-700 !rounded-button"> <i
+                                    class="fas fa-arrow-left text-lg"></i>
+                            </button>
+                            <h1 class="ml-4 text-xl font-medium text-gray-900">문의/건의사항 작성</h1>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="flex-1 py-8">
+                <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <form class="space-y-6">
+                        <div class="bg-white shadow-sm rounded-lg p-6 space-y-6">
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">작성자명</label>
+                                    <input type="text"
+                                        class="mt-1 block w-full border-gray-300 focus:border-custom focus:ring-custom"
+                                        required>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">이메일</label>
+                                    <input type="email"
+                                        class="mt-1 block w-full border-gray-300 focus:border-custom focus:ring-custom"
+                                        required>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">연락처</label>
+                                    <input type="tel"
+                                        class="mt-1 block w-full border-gray-300 focus:border-custom focus:ring-custom"
+                                        required>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">문의 유형</label>
+                                    <select
+                                        class="mt-1 block w-full border-gray-300 focus:border-custom focus:ring-custom"
+                                        required>
+                                        <option value="">선택해주세요</option>
+                                        <option value="general">일반문의</option>
+                                        <option value="improvement">서비스 개선 제안</option>
+                                        <option value="error">오류 신고</option>
+                                        <option value="other">기타</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">제목</label>
+                                    <input type="text"
+                                        class="mt-1 block w-full border-gray-300 focus:border-custom focus:ring-custom"
+                                        required>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">내용</label>
+                                    <textarea rows="6"
+                                        class="mt-1 block w-full border-gray-300 focus:border-custom focus:ring-custom"
+                                        required></textarea>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">파일 첨부</label>
+                                    <div
+                                        class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
+                                        <div class="space-y-1 text-center">
+                                            <i class="fas fa-upload text-gray-400 text-3xl mb-3"></i>
+                                            <div class="flex text-sm text-gray-600">
+                                                <label for="file-upload"
+                                                    class="relative cursor-pointer bg-white rounded-md font-medium text-custom hover:text-custom-dark focus-within:outline-none">
+                                                    <span>파일 업로드</span>
+                                                    <input id="file-upload" name="file-upload" type="file"
+                                                        class="sr-only" multiple> </label>
+                                                <p class="pl-1">또는 드래그 앤 드롭</p>
+                                            </div>
+                                            <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="relative flex items-start">
+                                    <div class="flex items-center h-5">
+                                        <input type="checkbox"
+                                            class="h-4 w-4 text-custom border-gray-300 focus:ring-custom" required>
+                                    </div>
+                                    <div class="ml-3 text-sm">
+                                        <label class="font-medium text-gray-700">개인정보 수집 및 이용 동의</label>
+                                        <p class="text-gray-500">문의 접수 및 처리를 위해 개인정보를 수집하고 이용하는 것에 동의합니다.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit"
+                                class="bg-custom text-white px-6 py-2 !rounded-button hover:bg-custom/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom">
+                                등록하기
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </main>
+        </div>
+        <script>
+            document.getElementById("backButton").addEventListener("click", function () {
+                history.back();
+            });
+        </script>
+</body>
+
+</html>

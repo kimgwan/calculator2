@@ -65,6 +65,14 @@ app.get('/a3', (req, res) => {
     res.render('a3.ejs')
 })
 
+app.get('/questions', (req, res) => {
+    res.render('questions.ejs')
+})
+
+app.get('/writequestion', (req, res) => {
+    res.render('writequestion.ejs')
+})
+
 // 홈 페이지
 app.get('/', async (req, res) => {
     try {
