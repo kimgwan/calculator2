@@ -53,6 +53,10 @@ new MongoClient(url).connect().then((client) => {
     console.log(err)
 })
 
+app.get('/test', (req, res) => {
+    res.render('test.ejs')
+})
+
 app.get('/a1', (req, res) => {
     res.render('a1.ejs')
 })
